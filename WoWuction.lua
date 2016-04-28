@@ -69,11 +69,11 @@ end
 function lib.GetPrice(hyperlink, serverKey)
 	if not get("stat.wowuction.enable") then return end
 	local array = lib.GetPriceArray(hyperlink, serverKey)
-	return array.latest, array.median, array.mean, array.stddev
+	return array.price, array.mean, false, array.stddev
 end
 
 function lib.GetPriceColumns()
-	return "Market Latest", "Market Median", "Market Mean", "Market Std Dev"
+	return "DBMarket", "DBMarket", false, "Market Std Dev"
 end
 
 local array = {}
@@ -83,24 +83,21 @@ function lib.GetPriceArray(id, serverKey)
 	seen = get("stat.wowuction.seen")
 	wipe(array)
 
-
---	local _, _, _, _, id = hyperlink:find("|?c?f?f?(%x*)|?H?([^:]*):?(%d+):?(%d*):?(%d*):?(%d*):?(%d*):?(%d*):?(%-?%d*):?(%-?%d*):?(%d*)|?h?%[?([^%[%]]*)%]?|?h?|?r?")
-	-- Required entries (see Stat-Example2)
-
-    -- TSMAPI keys suffixed with "Err" are supposed to return an error?
-    -- Not quite sure about the implications of that ... furthermore, why not put a 0 in there?
-	array.price = TSMAPI:GetItemValue(id, "wowuctionMedian")
 	array.seen = seen
-	array.latest = TSMAPI:GetItemValue(id, "DBMinBuyout") -- minBuyout does not exist anymore so we need to fallback to AuctionDB
-	array.market = TSMAPI:GetItemValue(id, "wowuctionMarket")
-	array.median = array.price
-	array.stddev = TSMAPI:GetItemValue(id, "wowuctionMedianErr")
-	array.cstddev = TSMAPI:GetItemValue(id, "wowuctionMarketErr")
-	array.region_median = TSMAPI:GetItemValue(id, "wowuctionRegionMedian")
-	array.region_stddev = TSMAPI:GetItemValue(id, "wowuctionRegionMedianErr")
-	array.region_price = TSMAPI:GetItemValue(id, "wowuctionRegionMarket")
-	array.region_cstddev = TSMAPI:GetItemValue(id, "wowuctionRegionMarketErr") or 0
 	array.qty = seen
+
+	array.price = TSMAPI:GetItemValue(id, "DBMarket")
+	array.median = array.price
+	
+	array.min_buyout = TSMAPI:GetItemValue(id, "DBMinBuyout") 
+
+	array.region_median = TSMAPI:GetItemValue(id, "DBRegionHistorical")
+	array.region_price = TSMAPI:GetItemValue(id, "DBRegionMarketAvg")
+	
+	array.stddev = 0.01
+	array.cstddev = 0.01
+	array.region_stddev = 0.01
+	array.region_cstddev = 0.01
 
 	return array
 end
@@ -109,6 +106,7 @@ local bellCurve = AucAdvanced.API.GenerateBellCurve()
 local weight, median, stddev
 local pdfcache = {} -- FIXME: should be cleared when settings change
 local n
+
 function lib.GetItemPDF(hyperlink, serverKey)
 	if not get("stat.wowuction.enable") then return end
 --	if pdfcache[hyperlink] then
@@ -121,7 +119,7 @@ function lib.GetItemPDF(hyperlink, serverKey)
 	-- 1 = +0 days = 100% current value, 0% median
 	-- 2 = +7 days = 200% current value, -100% median
 	local array = lib.GetPriceArray(hyperlink, serverKey)
-	local currPrice = array.market
+	local currPrice = array.price
 	local median = array.median
 	local currStddev = array.cstddev
 	local stddev = array.stddev
@@ -132,11 +130,13 @@ function lib.GetItemPDF(hyperlink, serverKey)
 	local confidence = get("stat.wowuction.confidence")
 	local regionResidual = regionCurrStddev or regionStddev or nil
 	local residual = currStddev or stddev or nil
+
 	if regionStddev and regionCurrStddev then
 		regionProjectedStddev = regionStddev * (1 - currWeight) + regionCurrStddev * currWeight
 	else
 		regionProjectedStddev = regionResidual
 	end
+
 	if currStddev and stddev then
 		projectedStddev = stddev * (1 - currWeight) + currStddev * currWeight
 	else
@@ -151,11 +151,13 @@ function lib.GetItemPDF(hyperlink, serverKey)
 			end
 		end
 	end
+
 	if regionCurrPrice and regionMedian then
 		regionProjectedPrice = regionCurrPrice * currWeight + regionMedian * (1 - currWeight)
 	else
 		regionProjectedPrice = regionCurrPrice or regionMedian or nil
 	end
+
 	if currPrice and median then
 		local adjCurrWeight
 		local regionAgreement = get("stat.wowuction.regionagreement")
@@ -180,11 +182,15 @@ function lib.GetItemPDF(hyperlink, serverKey)
 			end
 		end
 	end
+
 	local minErrorPct = get("stat.wowuction.minerrorpct")
 	projectedStddev = math.max(projectedStddev, minErrorPct * projectedPrice) / confidence
-	-- Calculate the lower and upper bounds as +/- 3 standard deviations
-	local lower, upper = (projectedPrice - 3 * projectedStddev), (projectedPrice + 3 * projectedStddev)
 	bellCurve:SetParameters(projectedPrice, projectedStddev)
+
+	-- Calculate the lower and upper bounds as +/- 3 standard deviations
+	local lower = projectedPrice - 3 * projectedStddev
+	local upper = projectedPrice + 3 * projectedStddev
+	
 	return bellCurve, lower, upper
 end
 
