@@ -6,3 +6,4 @@
 ## Dependencies: Auc-Advanced, TradeSkillMaster_AuctionDB
 Localization.lua
 WoWuction.lua
+WoWuction_Region.lua
