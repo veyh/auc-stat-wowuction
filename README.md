@@ -1,6 +1,6 @@
 # Auc:Stat:WoWuction
 
-Updated for WoD and latest TSM, which has removed support for WoWuction. This uses TSM's AuctionDB instead.
+Updated for Legion and latest TSM, which has removed support for WoWuction. This uses TSM's AuctionDB instead.
 
 ## Installation
 
