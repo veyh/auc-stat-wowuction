@@ -1,8 +1,8 @@
 ## Title: Auc:Stat:WoWUction
 ## Notes: Auctioneer statistics module that uses market data from WoWuction.
 ## Author: Johnny C. Lam and Chris Hennick (Arcanedamage - US-Blackrock)
-## Version: v1.0.4
-## Interface: 60200
+## Version: v1.1.0
+## Interface: 70300
 ## Dependencies: Auc-Advanced, TradeSkillMaster_AuctionDB
 Localization.lua
 WoWuction.lua
