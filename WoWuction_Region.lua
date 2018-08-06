@@ -58,12 +58,12 @@ function lib.GetPriceArray(id, serverKey)
   array.seen = seen
   array.qty = seen
 
-  array.price = TSMAPI:GetItemValue(id, "DBRegionMarketAvg")
-  array.median = TSMAPI:GetItemValue(id, "DBRegionHistorical")
-  array.min_buyout = TSMAPI:GetItemValue(id, "DBRegionMinBuyoutAvg")
+  array.price = TSMAPI_FOUR.CustomPrice.GetValue("DBRegionMarketAvg", id)
+  array.median = TSMAPI_FOUR.CustomPrice.GetValue("DBRegionHistorical", id)
+  array.min_buyout = TSMAPI_FOUR.CustomPrice.GetValue("DBRegionMinBuyoutAvg", id)
 
-  array.region_median = TSMAPI:GetItemValue(id, "DBGlobalHistorical")
-  array.region_price = TSMAPI:GetItemValue(id, "DBGlobalMarketAvg")
+  array.region_median = TSMAPI_FOUR.CustomPrice.GetValue("DBGlobalHistorical", id)
+  array.region_price = TSMAPI_FOUR.CustomPrice.GetValue("DBGlobalMarketAvg", id)
 
   array.stddev = 0.01
   array.cstddev = 0.01

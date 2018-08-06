@@ -1,7 +1,7 @@
 --[[
 	Auc-Stat-wowuction - WowUction price statistics module
 
-	This is an Auctioneer statistics module that returns price data from 
+	This is an Auctioneer statistics module that returns price data from
 	TSM_WoWuction addon.  You must have either The Undermine Journal
 	or TSM_WoWuction addon installed for this module to have any
 	effect.
@@ -86,14 +86,13 @@ function lib.GetPriceArray(id, serverKey)
 	array.seen = seen
 	array.qty = seen
 
-	array.price = TSMAPI:GetItemValue(id, "DBMarket")
+	array.price = TSMAPI_FOUR.CustomPrice.GetValue("DBMarket", id)
 	array.median = array.price
-	
-	array.min_buyout = TSMAPI:GetItemValue(id, "DBMinBuyout") 
+	array.min_buyout = TSMAPI_FOUR.CustomPrice.GetValue("DBMinBuyout", id)
 
-	array.region_median = TSMAPI:GetItemValue(id, "DBRegionHistorical")
-	array.region_price = TSMAPI:GetItemValue(id, "DBRegionMarketAvg")
-	
+	array.region_median = TSMAPI_FOUR.CustomPrice.GetValue("DBRegionHistorical", id)
+	array.region_price = TSMAPI_FOUR.CustomPrice.GetValue("DBRegionMarketAvg", id)
+
 	array.stddev = 0.01
 	array.cstddev = 0.01
 	array.region_stddev = 0.01
@@ -171,7 +170,7 @@ function lib.GetItemPDF(hyperlink, serverKey)
 			adjCurrWeight = currWeight
 		end
 		projectedPrice = currPrice * adjCurrWeight + median * (1 - adjCurrWeight)
-	else 
+	else
 		projectedPrice = currPrice or median or nil
 		if not projectedPrice then
 			if regionFallback and regionProjectedPrice then
@@ -190,7 +189,7 @@ function lib.GetItemPDF(hyperlink, serverKey)
 	-- Calculate the lower and upper bounds as +/- 3 standard deviations
 	local lower = projectedPrice - 3 * projectedStddev
 	local upper = projectedPrice + 3 * projectedStddev
-	
+
 	return bellCurve, lower, upper
 end
 
