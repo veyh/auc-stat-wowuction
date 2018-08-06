@@ -3,7 +3,7 @@
 ## Author: Johnny C. Lam and Chris Hennick (Arcanedamage - US-Blackrock)
 ## Version: v1.1.0
 ## Interface: 70300
-## Dependencies: Auc-Advanced, TradeSkillMaster_AuctionDB
+## Dependencies: Auc-Advanced, TradeSkillMaster
 Localization.lua
 WoWuction.lua
 WoWuction_Region.lua
