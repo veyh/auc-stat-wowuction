@@ -78,6 +78,7 @@ end
 
 local array = {}
 local seen
+
 function lib.GetPriceArray(id, serverKey)
 	if not get("stat.wowuction.enable") then return end
 	seen = get("stat.wowuction.seen")
@@ -86,12 +87,12 @@ function lib.GetPriceArray(id, serverKey)
 	array.seen = seen
 	array.qty = seen
 
-	array.price = TSMAPI_FOUR.CustomPrice.GetValue("DBMarket", id)
+	array.price = lib.GetTSMValue("DBMarket", id)
 	array.median = array.price
-	array.min_buyout = TSMAPI_FOUR.CustomPrice.GetValue("DBMinBuyout", id)
+	array.min_buyout = lib.GetTSMValue("DBMinBuyout", id)
 
-	array.region_median = TSMAPI_FOUR.CustomPrice.GetValue("DBRegionHistorical", id)
-	array.region_price = TSMAPI_FOUR.CustomPrice.GetValue("DBRegionMarketAvg", id)
+	array.region_median = lib.GetTSMValue("DBRegionHistorical", id)
+	array.region_price = lib.GetTSMValue("DBRegionMarketAvg", id)
 
 	array.stddev = 0.01
 	array.cstddev = 0.01
@@ -99,6 +100,10 @@ function lib.GetPriceArray(id, serverKey)
 	array.region_cstddev = 0.01
 
 	return array
+end
+
+function lib.GetTSMValue(...)
+	return TSM_API.GetCustomPriceValue(...)
 end
 
 local bellCurve = AucAdvanced.API.GenerateBellCurve()
