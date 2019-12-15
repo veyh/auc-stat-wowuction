@@ -102,8 +102,8 @@ function lib.GetPriceArray(id, serverKey)
 	return array
 end
 
-function lib.GetTSMValue(...)
-	return TSM_API.GetCustomPriceValue(...)
+function lib.GetTSMValue(priceString, item)
+	return TSM_API.GetCustomPriceValue(priceString, TSM_API.ToItemString(item))
 end
 
 local bellCurve = AucAdvanced.API.GenerateBellCurve()
